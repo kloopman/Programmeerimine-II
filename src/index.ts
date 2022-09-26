@@ -44,17 +44,47 @@ interface INewComment {
     content: string;
 }
 
+//Kodutööga seotud interfaced
+
 interface IComment extends INewComment {
     id: number;
+}
+
+interface ICourse { //Õppeaine
+    id: number;
+    courseName: string;
+    courseCode: string;
+}
+
+interface ILecturer { //Õppejõud
+    lecturerId: number;
+    lecturerName: string;
+}
+
+interface IGroup {
+    groupId: number;
+    groupName: string;
+}
+
+interface ISchoolDay {
+    dayId: number;
+    dayName: string;
 }
 
 const users: IUserWithPassword[] = [
     {
         id: 1,
-        firstName: 'Juhan',
-        lastName: 'Juurikas',
-        email: 'juhan@juurikas.ee',
-        password: 'juhan',
+        firstName: 'Kerli',
+        lastName: 'Loopman',
+        email: 'kloopman@tlu.ee',
+        password: 'kerli',
+    },
+    {
+        id: 2,
+        firstName: 'Maali',
+        lastName: 'Maasikas',
+        email: 'maali@maasikas.ee',
+        password: 'maasikas',
     },
 ];
 
@@ -110,6 +140,54 @@ const comments: IComment[] = [
         content: 'Teise postituse teine kommentaar',
     },
 ]
+
+const courses: ICourse[] = [
+    {
+        id: 1,
+        courseName: 'Programmeerimine I',
+        courseCode: 'HKI3503.HK',
+    },
+    {
+        id: 2,
+        courseName: 'Programmeerimine II',
+        courseCode: 'HKI5003.HK',
+    },
+];
+
+const lecturers: ILecturer[] = [
+    {
+        lecturerId: 1,
+        lecturerName: 'Martti Raavel',
+    },
+    {
+        lecturerId: 2,
+        lecturerName: 'Priidu Paomets',
+    },
+];
+
+const groups: IGroup[] = [
+    {
+        groupId: 1,
+        groupName: 'RIF2',
+    },
+    {
+        groupId: 2,
+        groupName: 'KTD2',
+    },
+];
+
+const schooldays: ISchoolDay[] = [
+    {
+        dayId: 1,
+        dayName: '28. september, 2022',
+    },
+    {
+        dayId: 2,
+        dayName: '28. september, 2022',
+    },
+];
+
+
 
 // Endpoint API töötamise kontrollimisek
 app.get('/api/v1/health', (req: Request, res: Response) => {
@@ -287,7 +365,7 @@ app.get('/api/v1/posts', (req: Request, res: Response) => {
 
 // Postituse pärimine id alusel
 app.get('/api/v1/posts/:id', (req: Request, res: Response) => {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id); //muudan numbriks
     const post = findPostById(id);
     if (!post) {
         return res.status(404).json({
@@ -481,6 +559,74 @@ app.delete('/api/v1/comments/:id', (req: Request, res: Response) => {
 });
 
 
+
+/*
+--------------------------------------------------
+Kodutööga seotud endpointid - 
+--------------------------------------------------
+*/
+
+//õppeainete pärimise endpoint 
+app.get('/api/v1/courses', (req: Request, res: Response) => {
+    res.status(200).json({
+        success: true,
+        message: 'List of courses',
+        courses
+    });
+});
+
+
+// Õppeaine loomine
+app.post('/api/v1/courses', (req: Request, res: Response) => {
+    const { courseName, courseCode } = req.body;
+    if (!courseName || !courseCode) {
+        return res.status(400).json({
+            success: false,
+            message: `Some data is missing (courseCode, courseName)`,
+        });
+    }
+    const id = courses.length + 1;
+    const newCourse: ICourse = {
+        id,
+        courseName,
+        courseCode,
+    };
+    courses.push(newCourse);
+
+    return res.status(201).json({
+        success: true,
+        message: `Course with id ${newCourse.id} created`,
+    });
+});
+
+
+//Õppejõud
+app.get('/api/v1/lecturers', (req: Request, res: Response) => {
+    res.status(200).json({
+        success: true,
+        message: 'List of lecturers',
+        lecturers
+    });
+});
+
+
+//Kursusegrupid
+app.get('/api/v1/groups', (req: Request, res: Response) => {
+    res.status(200).json({
+        success: true,
+        message: 'List of groups',
+        groups
+    });
+});
+
+//Koolipäevad
+app.get('/api/v1/schooldays', (req: Request, res: Response) => {
+    res.status(200).json({
+        success: true,
+        message: 'List of schooldays',
+        schooldays
+    });
+});
 /*
 --------------------------------------------------
 Kasutajatega seotud funktsioonid
@@ -566,6 +712,62 @@ const findCommentsByPostId = (id: number): IComment[] => {
     return postComments;
 }
 
+/*
+--------------------------------------------------
+Kodutööga seotud funktsioonid
+--------------------------------------------------
+*/
+
+//ÕPPEAINED
+
+//Õppeaine leidmine ID järgi
+const findCourseById = (id: number): ICourse | undefined => {
+    let course: ICourse | undefined = courses.find(element => element.id === id);
+    return course;
+};
+
+
+
+
+
+
+
+// Õppeaine muutmine
+app.patch('/api/v1/courses/:id', (req: Request, res: Response) => {
+    const id = parseInt(req.params.id);
+    const { courseName, courseCode } = req.body;
+    const course: ICourse | undefined = findCourseById(id);
+    if (!course) {
+        return res.status(404).json({
+            success: false,
+            message: `Course not found`,
+        });
+    }
+    if (!courseName && !courseCode) {
+        return res.status(400).json({
+            success: false,
+            message: `Nothing to change`,
+        });
+    }
+
+    if (courseName) course.courseName = courseName;
+    if (courseCode) course.courseCode = courseCode;
+
+
+    return res.status(200).json({
+        success: true,
+        message: `Course updated`,
+    });
+});
+
+
+//ÕPPEJÕUD
+
+//KURSUSED
+//KOOLIPÄEVAD
+
+
 app.listen(PORT, () => {
     console.log('Server is running');
 });
+
