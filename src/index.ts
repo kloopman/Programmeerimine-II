@@ -1,193 +1,20 @@
 import express, { Request, Response } from 'express';
+import { INewUser, IUser, IUserWithoutPassword } from './components/users/interfaces';
+import { IPost, INewPost } from './components/posts/interfaces';
+import { IComment, INewComment } from './components/comments/interfaces';
+import { INewPostStatus, IPostStatus } from './components/postStatuses/interfaces';
+import { ICourse } from './components/courses/interfaces';
+import { ILecturer } from './components/lecturers/interfaces';
+import { IGroup } from './components/groups/interfaces';
+import { ISchoolDay } from './components/schooldays/interfaces';
+import { users, postStatuses, posts, comments, courses, lecturers, groups, schooldays } from './mockData';
+import usersServices from './components/users/services';
+import usersControllers from './components/users/controllers';
+
 const app = express();
 const PORT = 3000;
 
 app.use(express.json());
-
-interface INewUser {
-    firstName: string;
-    lastName: string;
-    email: string;
-}
-
-interface IUser extends INewUser {
-    id: number;
-}
-
-
-interface IUserWithPassword extends IUser {
-    password: string;
-}
-
-interface INewPost {
-    userId: number;
-    title: string;
-    content: string;
-    statusId: number;
-}
-
-interface IPost extends INewPost {
-    id: number;
-}
-
-interface INewPostStatus {
-    status: string;
-}
-
-interface IPostStatus extends INewPostStatus {
-    id: number;
-}
-
-interface INewComment {
-    userId: number;
-    postId: number;
-    content: string;
-}
-
-//Kodutööga seotud interfaced
-
-interface IComment extends INewComment {
-    id: number;
-}
-
-interface ICourse { //Õppeaine
-    id: number;
-    courseName: string;
-    courseCode: string;
-}
-
-interface ILecturer { //Õppejõud
-    id: number;
-    lecturerName: string;
-}
-
-interface IGroup {
-    id: number;
-    groupName: string;
-}
-
-interface ISchoolDay {
-    id: number;
-    dayName: string;
-}
-
-const users: IUserWithPassword[] = [
-    {
-        id: 1,
-        firstName: 'Kerli',
-        lastName: 'Loopman',
-        email: 'kloopman@tlu.ee',
-        password: 'kerli',
-    },
-    {
-        id: 2,
-        firstName: 'Maali',
-        lastName: 'Maasikas',
-        email: 'maali@maasikas.ee',
-        password: 'maasikas',
-    },
-];
-
-const posts: IPost[] = [
-    {
-        id: 1,
-        title: 'Esimene postitus',
-        content: 'Esimese postituse sisu',
-        userId: 2,
-        statusId: 7,
-    },
-    {
-        id: 2,
-        title: 'Teine postitus',
-        content: 'Teise postituse sisu',
-        userId: 1,
-        statusId: 2,
-    },
-];
-
-const postStatuses: IPostStatus[] = [
-    {
-        id: 1,
-        status: 'Draft',
-    },
-    {
-        id: 2,
-        status: 'Public',
-    },
-    {
-        id: 3,
-        status: 'Private',
-    },
-];
-
-const comments: IComment[] = [
-    {
-        id: 1,
-        userId: 1,
-        postId: 1,
-        content: 'Esimese postituse esimene kommentaar',
-    },
-    {
-        id: 2,
-        userId: 1,
-        postId: 2,
-        content: 'Teise postituse esimene kommentaar',
-    },
-    {
-        id: 3,
-        userId: 1,
-        postId: 2,
-        content: 'Teise postituse teine kommentaar',
-    },
-]
-
-const courses: ICourse[] = [
-    {
-        id: 1,
-        courseName: 'Programmeerimine I',
-        courseCode: 'HKI3503.HK',
-    },
-    {
-        id: 2,
-        courseName: 'Programmeerimine II',
-        courseCode: 'HKI5003.HK',
-    },
-];
-
-const lecturers: ILecturer[] = [
-    {
-        id: 1,
-        lecturerName: 'Martti Raavel',
-    },
-    {
-        id: 2,
-        lecturerName: 'Priidu Paomets',
-    },
-];
-
-const groups: IGroup[] = [
-    {
-        id: 1,
-        groupName: 'RIF2',
-    },
-    {
-        id: 2,
-        groupName: 'KTD2',
-    },
-];
-
-const schooldays: ISchoolDay[] = [
-    {
-        id: 1,
-        dayName: '28. september, 2022',
-    },
-    {
-        id: 2,
-        dayName: '28. september, 2022',
-    },
-];
-
-
 
 // Endpoint API töötamise kontrollimisek
 app.get('/api/v1/health', (req: Request, res: Response) => {
@@ -204,109 +31,19 @@ Kasutajatega seotud endpoindid
 
 
 // Kõikide kasutajate pärimise endpoint
-app.get('/api/v1/users', (req: Request, res: Response) => {
-    const usersWithoutPassword = users.map(user => {
-        const userWithoutPassword = getUserWithoutPassword(user);
-        return userWithoutPassword;
-    });
-    res.status(200).json({
-        success: true,
-        message: 'List of users',
-        users: usersWithoutPassword,
-    });
-});
+app.get('/api/v1/users', usersControllers.getAllUsers);
 
 // Kasutaja pärimine id alusel
-app.get('/api/v1/users/:id', (req: Request, res: Response) => {
-    const id = parseInt(req.params.id);
-    let user: IUserWithPassword | undefined = findUserById(id);
-    if (!user) {
-        return res.status(404).json({
-            success: false,
-            message: `User not found`,
-        });
-    }
-    const userWithoutPassword = getUserWithoutPassword(user);
-
-    return res.status(200).json({
-        success: true,
-        message: `User`,
-        data: {
-            user: userWithoutPassword
-        },
-    });
-});
+app.get('/api/v1/users/:id', usersControllers.getUserById);
 
 // Kasutaja muutmine
-app.patch('/api/v1/users/:id', (req: Request, res: Response) => {
-    const id = parseInt(req.params.id);
-    const { firstName, lastName, email, password } = req.body;
-    const user: IUserWithPassword | undefined = findUserById(id);
-    if (!user) {
-        return res.status(404).json({
-            success: false,
-            message: `User not found`,
-        });
-    }
-    if (!firstName && !lastName && !email && !password) {
-        return res.status(400).json({
-            success: false,
-            message: `Nothing to change`,
-        });
-    }
-
-    if (firstName) user.firstName = firstName;
-    if (lastName) user.lastName = lastName;
-    if (email) user.email = email;
-    if (password) user.password = password;
-
-    return res.status(200).json({
-        success: true,
-        message: `User updated`,
-    });
-});
+app.patch('/api/v1/users/:id', usersControllers.changeUser);
 
 // Kasutaja loomine
-app.post('/api/v1/users', (req: Request, res: Response) => {
-    const { firstName, lastName, email, password } = req.body;
-    if (!firstName || !lastName || !email || !password) {
-        return res.status(400).json({
-            success: false,
-            message: `Some data is missing (firstName, lastName, email, password)`,
-        });
-    }
-    const id = users.length + 1;
-    const newUser: IUserWithPassword = {
-        id,
-        firstName,
-        lastName,
-        email,
-        password
-    };
-    users.push(newUser);
-
-    return res.status(201).json({
-        success: true,
-        message: `User with id ${newUser.id} created`,
-    });
-});
+app.post('/api/v1/users', usersControllers.createUser);
 
 // Kasutaja kustutamine
-app.delete('/api/v1/users/:id', (req: Request, res: Response) => {
-    const id = parseInt(req.params.id);
-    const index = users.findIndex(element => element.id === id);
-    if (index === -1) {
-        return res.status(404).json({
-            success: false,
-            message: `User not found`,
-        });
-    }
-    users.splice(index, 1);
-    return res.status(200).json({
-        success: true,
-        message: `User deleted`,
-    });
-});
+app.delete('/api/v1/users/:id', usersControllers.deleteUser);
 
 /*
 --------------------------------------------------
@@ -465,9 +202,9 @@ Kommentaaridega seotud endpoindid
 // Kõikide kommentaaride pärimise endpoint
 app.get('/api/v1/comments', (req: Request, res: Response) => {
     const commentsWithUsers = comments.map(comment => {
-        let user: IUserWithPassword | undefined = findUserById(comment.id);
-        if (!user) user = unknownUser();
-        const userWithoutPassword = getUserWithoutPassword(user);
+        let user: IUser | undefined = usersServices.findUserById(comment.id);
+        if (!user) user = usersServices.unknownUser();
+        const userWithoutPassword = usersServices.getUserWithoutPassword(user);
         const commentWithUser = {
             id: comment.id,
             content: comment.content,
@@ -883,37 +620,6 @@ app.delete('/api/v1/schooldays/:id', (req: Request, res: Response) => {
     });
 });
 
-
-/*
---------------------------------------------------
-Kasutajatega seotud funktsioonid
---------------------------------------------------
-*/
-
-const findUserById = (id: number): IUserWithPassword | undefined => {
-    let user: IUserWithPassword | undefined = users.find(element => element.id === id);
-    return user;
-};
-
-const getUserWithoutPassword = (user: IUserWithPassword): IUser => {
-    return {
-        id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-    };
-};
-
-const unknownUser = (): IUserWithPassword => {
-    return {
-        id: 0,
-        firstName: 'Jane',
-        lastName: 'Doe',
-        email: 'jane@doe.com',
-        password: 'jane',
-    };
-};
-
 /*
 --------------------------------------------------
 Postitustega seotud funktsioonid
@@ -929,9 +635,9 @@ const findPostById = (id: number): IPost | undefined => {
 
 const getPostWithStatusAndUser = (post: IPost) => {
     const postStatus = getPostStatusById(post.statusId);
-    let user: IUserWithPassword | undefined = findUserById(post.userId);
-    if (!user) user = unknownUser();
-    const userWithoutPassword = getUserWithoutPassword(user);
+    let user: IUser | undefined = usersServices.findUserById(post.userId);
+    if (!user) user = usersServices.unknownUser();
+    const userWithoutPassword = usersServices.getUserWithoutPassword(user);
 
     const postWithStatusAndUser = {
         id: post.id,
