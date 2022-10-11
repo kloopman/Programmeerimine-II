@@ -13,8 +13,8 @@ import usersControllers from './components/users/controllers';
 import postStatusesControllers from './components/postStatuses/controllers';
 import postsControllers from './components/posts/controllers';
 import commentsControllers from './components/comments/controllers';
-import coursesControllers from './components/courses/controllers';
 import lecturersControllers from './components/lecturers/controllers';
+import coursesControllers from './components/courses/controllers';
 import groupsControllers from './components/groups/controllers';
 import schooldaysControllers from './components/schooldays/controllers';
 
