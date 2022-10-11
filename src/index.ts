@@ -57,17 +57,17 @@ interface ICourse { //Õppeaine
 }
 
 interface ILecturer { //Õppejõud
-    lecturerId: number;
+    id: number;
     lecturerName: string;
 }
 
 interface IGroup {
-    groupId: number;
+    id: number;
     groupName: string;
 }
 
 interface ISchoolDay {
-    dayId: number;
+    id: number;
     dayName: string;
 }
 
@@ -156,33 +156,33 @@ const courses: ICourse[] = [
 
 const lecturers: ILecturer[] = [
     {
-        lecturerId: 1,
+        id: 1,
         lecturerName: 'Martti Raavel',
     },
     {
-        lecturerId: 2,
+        id: 2,
         lecturerName: 'Priidu Paomets',
     },
 ];
 
 const groups: IGroup[] = [
     {
-        groupId: 1,
+        id: 1,
         groupName: 'RIF2',
     },
     {
-        groupId: 2,
+        id: 2,
         groupName: 'KTD2',
     },
 ];
 
 const schooldays: ISchoolDay[] = [
     {
-        dayId: 1,
+        id: 1,
         dayName: '28. september, 2022',
     },
     {
-        dayId: 2,
+        id: 2,
         dayName: '28. september, 2022',
     },
 ];
@@ -599,8 +599,54 @@ app.post('/api/v1/courses', (req: Request, res: Response) => {
     });
 });
 
+//Õppeaine muutmine
+app.patch('/api/v1/courses/:id', (req: Request, res: Response) => {
+    const id = parseInt(req.params.id);
+    const { courseName, courseCode } = req.body;
+    const course = courses.find(element => {
+        return element.id === id;
+    });
+    if (!course) {
+        return res.status(404).json({
+            success: false,
+            message: `Course not found`
+        });
+    }
+    if (!courseName && !courseCode) {
+        return res.status(400).json({
+            success: false,
+            message: `Nothing to change`,
+        });
+    }
+    if (courseName) course.courseName = courseName;
+    if (courseCode) course.courseCode = courseCode;
 
-//Õppejõud
+    return res.status(200).json({ //See osa töötab aga minu meelest eelmised mitte. 
+        success: true,
+        message: `Course updated`,
+    });
+});
+
+//Õppeaine kustutamine
+
+app.delete('/api/v1/courses/:id', (req: Request, res: Response) => {
+    const id = parseInt(req.params.id);
+    const index = courses.findIndex(element => element.id === id);
+    if (index === -1) {
+        return res.status(404).json({
+            success: false,
+            message: `Course not found`,
+        });
+    }
+    courses.splice(index, 1);
+    return res.status(200).json({
+        success: true,
+        message: `Course deleted`,
+    });
+});
+
+//ÕPPEJÕUGA SEOTUD ENDPOINTID
+//Õppejõud pärimise endpoint
 app.get('/api/v1/lecturers', (req: Request, res: Response) => {
     res.status(200).json({
         success: true,
@@ -608,6 +654,75 @@ app.get('/api/v1/lecturers', (req: Request, res: Response) => {
         lecturers
     });
 });
+
+//Õppejõu loomine
+
+app.post('/api/v1/lecturers', (req: Request, res: Response) => {
+    const { lecturerName } = req.body;
+    if (!lecturerName) {
+        return res.status(400).json({
+            success: false,
+            message: `Lecturer name missing`,
+        });
+    }
+    const id = lecturers.length + 1;
+    const newLecturer: ILecturer = {
+        id,
+        lecturerName,
+    };
+    lecturers.push(newLecturer);
+
+    return res.status(201).json({
+        success: true,
+        message: `Lecturer with id ${newLecturer.id} created`,
+    });
+});
+
+//Õppejõu muutmine
+
+app.patch('/api/v1/lecturers/:id', (req: Request, res: Response) => {
+    const id = parseInt(req.params.id);
+    const { lecturerName } = req.body;
+    const lecturer = lecturers.find(element => {
+        return element.id === id;
+    });
+
+    if (!lecturer) {
+        return res.status(404).json({
+            success: false,
+            message: `Lecturer not found`,
+        });
+    }
+    if (!lecturerName) {
+        return res.status(400).json({
+            success: false,
+            message: `Nothing to change`,
+        });
+    }
+    if (lecturerName) lecturer.lecturerName = lecturerName;
+    return res.status(200).json({
+        success: true,
+        message: `Lecturer updated`,
+    });
+});
+
+//Õppejõu kustutamine
+app.delete('/api/v1/lecturers/:id', (req: Request, res: Response) => {
+    const id = parseInt(req.params.id);
+    const index = courses.findIndex(element => element.id === id);
+    if (index === -1) {
+        return res.status(404).json({
+            success: false,
+            message: `Lecturer not found`,
+        });
+    }
+    lecturers.splice(index, 1);
+    return res.status(200).json({
+        success: true,
+        message: `Lecturer deleted`,
+    });
+});
+
 
 
 //Kursusegrupid
@@ -619,6 +734,79 @@ app.get('/api/v1/groups', (req: Request, res: Response) => {
     });
 });
 
+//Kursusegrupi lisamine
+
+app.post('/api/v1/groups/', (req: Request, res: Response) => {
+    const { groupName } = req.body;
+    if (!groupName) {
+        return res.status(400).json({
+            success: false,
+            message: `Group name missing`,
+        });
+    }
+    const id = groups.length + 1;
+    const newGroup: IGroup = {
+        id,
+        groupName,
+    };
+    groups.push(newGroup);
+
+    return res.status(201).json({
+        success: true,
+        message: `Group with id ${newGroup.id} created`,
+    });
+});
+
+
+
+//Kursusegrupi muutmine
+
+app.patch('/api/v1/groups/:id', (req: Request, res: Response) => {
+    const id = parseInt(req.params.id);
+    const { groupName } = req.body;
+    const group = groups.find(element => {
+        return element.id === id;
+    });
+    if (!group) {
+        return res.status(404).json({
+            success: false,
+            message: `Group not found`,
+        });
+    }
+    if (!groupName) {
+        return res.status(400).json({
+            success: false,
+            message: `Nothing to change`,
+        });
+    }
+    if (groupName) group.groupName = groupName;
+    return res.status(200).json({
+        success: true,
+        message: `Group updated`,
+    });
+});
+
+
+//Kursusegrupi kustutamine
+
+app.delete('/api/v1/groups/:id', (req: Request, res: Response) => {
+    const id = parseInt(req.params.id);
+    const index = groups.findIndex(element => element.id === id);
+    if (index === -1) {
+        return res.status(404).json({
+            success: false,
+            message: `Group not found`,
+        });
+    }
+    groups.splice(index, 1);
+    return res.status(200).json({
+        success: true,
+        message: `Group deleted`,
+    });
+});
+
+
+
 //Koolipäevad
 app.get('/api/v1/schooldays', (req: Request, res: Response) => {
     res.status(200).json({
@@ -627,6 +815,75 @@ app.get('/api/v1/schooldays', (req: Request, res: Response) => {
         schooldays
     });
 });
+
+//Koolipäeva lisamine
+app.post('/api/v1/schooldays/', (req: Request, res: Response) => {
+    const { dayName } = req.body;
+    if (!dayName) {
+        return res.status(400).json({
+            success: false,
+            message: `Day name name missing`,
+        });
+    }
+    const id = schooldays.length + 1;
+    const newSchoolday: ISchoolDay = {
+        id,
+        dayName,
+    };
+    schooldays.push(newSchoolday);
+
+    return res.status(201).json({
+        success: true,
+        message: `Day with id ${newSchoolday.id} created`,
+    });
+});
+
+
+//Koolipäeva muutmine
+app.patch('/api/v1/schooldays/:id', (req: Request, res: Response) => {
+    const id = parseInt(req.params.id);
+    const { dayName } = req.body;
+    const day = schooldays.find(element => {
+        return element.id === id;
+    });
+    if (!day) {
+        return res.status(404).json({
+            success: false,
+            message: `Day not found`,
+        });
+    }
+    if (!dayName) {
+        return res.status(400).json({
+            success: false,
+            message: `Nothing to change`,
+        });
+    }
+    if (dayName) day.dayName = dayName;
+    return res.status(200).json({
+        success: true,
+        message: `Schoolday updated`,
+    });
+});
+
+
+//Koolipäeva kustutamine
+app.delete('/api/v1/schooldays/:id', (req: Request, res: Response) => {
+    const id = parseInt(req.params.id);
+    const index = schooldays.findIndex(element => element.id === id);
+    if (index === -1) {
+        return res.status(404).json({
+            success: false,
+            message: `Schoolday not found`,
+        });
+    }
+    schooldays.splice(index, 1);
+    return res.status(200).json({
+        success: true,
+        message: `Schoolday deleted`,
+    });
+});
+
+
 /*
 --------------------------------------------------
 Kasutajatega seotud funktsioonid
