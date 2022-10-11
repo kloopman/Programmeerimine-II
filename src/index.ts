@@ -10,6 +10,9 @@ import { ISchoolDay } from './components/schooldays/interfaces';
 import { users, postStatuses, posts, comments, courses, lecturers, groups, schooldays } from './mockData';
 import usersServices from './components/users/services';
 import usersControllers from './components/users/controllers';
+import postStatusesControllers from './components/postStatuses/controllers';
+import postsControllers from './components/posts/controllers';
+import commentsControllers from './components/comments/controllers';
 
 const app = express();
 const PORT = 3000;
@@ -52,34 +55,10 @@ Postituste staatustega seotud endpoindid
 */
 
 // Kõikide postituste staatuste pärimise endpoint
-app.get('/api/v1/posts/statuses', (req: Request, res: Response) => {
-    res.status(200).json({
-        success: true,
-        message: 'List of post statuses',
-        postStatuses,
-    });
-});
+app.get('/api/v1/posts/statuses', postStatusesControllers.getPostStatuses);
 
 // Postituse staatus pärimine staatuse id alusel
-app.get('/api/v1/posts/statuses/:id', (req: Request, res: Response) => {
-    const id = parseInt(req.params.id);
-    const postStatus = postStatuses.find(element => {
-        return element.id === id;
-    });
-    if (!postStatus) {
-        return res.status(404).json({
-            success: false,
-            message: `Post status not found`,
-        });
-    }
-    return res.status(200).json({
-        success: true,
-        message: `Post status`,
-        data: {
-            postStatus,
-        },
-    });
-});
+app.get('/api/v1/posts/statuses/:id', postStatusesControllers.getPostStatusById);
 
 /*
 --------------------------------------------------
@@ -88,110 +67,19 @@ Postitustega seotud endpoindid
 */
 
 // Kõikide postituste pärimise endpoint
-app.get('/api/v1/posts', (req: Request, res: Response) => {
-    const postsWithStatusesAndUsers = posts.map(post => {
-        const postWithStatusAndUser = getPostWithStatusAndUser(post);
-        return postWithStatusAndUser;
-    });
-    res.status(200).json({
-        success: true,
-        message: 'List of posts',
-        posts: postsWithStatusesAndUsers,
-    });
-});
+app.get('/api/v1/posts', postsControllers.getPosts);
 
 // Postituse pärimine id alusel
-app.get('/api/v1/posts/:id', (req: Request, res: Response) => {
-    const id = parseInt(req.params.id); //muudan numbriks
-    const post = findPostById(id);
-    if (!post) {
-        return res.status(404).json({
-            success: false,
-            message: `Post not found`,
-        });
-    };
-
-    const postWithStatusAndUser = getPostWithStatusAndUser(post);
-    return res.status(200).json({
-        success: true,
-        message: `Post`,
-        data: {
-            post: postWithStatusAndUser,
-        },
-    });
-});
+app.get('/api/v1/posts/:id', postsControllers.getPostById);
 
 // Postituse loomine
-app.post('/api/v1/posts', (req: Request, res: Response) => {
-    const { title, content, userId, statusId } = req.body;
-    if (!title || !content || !userId || !statusId) {
-        return res.status(400).json({
-            success: false,
-            message: `Some data is missing (title, content, userId, statusId)`,
-        });
-    }
-    const id = posts.length + 1;
-    const newPost: IPost = {
-        id,
-        title,
-        content,
-        userId,
-        statusId,
-    };
-    posts.push(newPost);
-
-    return res.status(201).json({
-        success: true,
-        message: `Post with id ${newPost.id} created`,
-    });
-});
+app.post('/api/v1/posts', postsControllers.createPost);
 
 // Postituse muutmine
-app.patch('/api/v1/posts/:id', (req: Request, res: Response) => {
-    const id = parseInt(req.params.id);
-    const { title, content, statusId } = req.body;
-    const post = posts.find(element => {
-        return element.id === id;
-    });
-    if (!post) {
-        return res.status(404).json({
-            success: false,
-            message: `Post not found`,
-        });
-    }
-    if (!title && !content && !statusId) {
-        return res.status(400).json({
-            success: false,
-            message: `Nothing to change`,
-        });
-    }
-
-    if (title) post.title = title;
-    if (content) post.content = content;
-    if (statusId) post.statusId = statusId;
-
-    return res.status(200).json({
-        success: true,
-        message: `Post updated`,
-    });
-});
+app.patch('/api/v1/posts/:id', postsControllers.editPost);
 
 // Postituse kustutamine
-app.delete('/api/v1/posts/:id', (req: Request, res: Response) => {
-    const id = parseInt(req.params.id);
-    const index = posts.findIndex(element => element.id === id);
-    if (index === -1) {
-        return res.status(404).json({
-            success: false,
-            message: `Post not found`,
-        });
-    }
-    posts.splice(index, 1);
-    return res.status(200).json({
-        success: true,
-        message: `Post deleted`,
-    });
-});
+app.delete('/api/v1/posts/:id', postsControllers.deletePost);
 
 /*
 --------------------------------------------------
@@ -200,100 +88,19 @@ Kommentaaridega seotud endpoindid
 */
 
 // Kõikide kommentaaride pärimise endpoint
-app.get('/api/v1/comments', (req: Request, res: Response) => {
-    const commentsWithUsers = comments.map(comment => {
-        let user: IUser | undefined = usersServices.findUserById(comment.id);
-        if (!user) user = usersServices.unknownUser();
-        const userWithoutPassword = usersServices.getUserWithoutPassword(user);
-        const commentWithUser = {
-            id: comment.id,
-            content: comment.content,
-            user: userWithoutPassword,
-        };
-        return commentWithUser;
-    });
-
-    res.status(200).json({
-        success: true,
-        message: 'List of all comments',
-        comments: commentsWithUsers,
-    });
-});
+app.get('/api/v1/comments', commentsControllers.getComments);
 
 // Kommentaari pärimine id alusel
-app.get('/api/v1/comments/:id', (req: Request, res: Response) => {
-    const id = parseInt(req.params.id);
-    const comment = getCommentById(id);
-    if (!comment) {
-        return res.status(404).json({
-            success: false,
-            message: `Comment not found`,
-        });
-    }
-    return res.status(200).json({
-        success: true,
-        message: `Comment`,
-        data: {
-            comment,
-        },
-    });
-});
+app.get('/api/v1/comments/:id', commentsControllers.getCommentById);
 
-// Postitusega seotud kommentaaride pärimise endpoint
-app.get('/api/v1/posts/:id/comments', (req: Request, res: Response) => {
-    const id = parseInt(req.params.id);
-    const comments = findCommentsByPostId(id);
-    return res.status(200).json({
-        success: true,
-        message: `Comments of post with id: ${id}`,
-        data: {
-            comments,
-        },
-    });
-});
+// Postitusega seotud kommentaaride pärimise endpoint //SIIN AJAB KÜLL SEGADUSSE, ET MIKS ON OSA COMMENTSIS JA OSA POSTSIS. 
+app.get('/api/v1/posts/:id/comments', postsControllers.getPostComment);
 
 // Kommentaari loomine
-app.post('/api/v1/comments', (req: Request, res: Response) => {
-    const { postId, content } = req.body;
-    let { userId } = req.body;
-    if (!postId || !content) {
-        return res.status(400).json({
-            success: false,
-            message: `Some data is missing (postId, content)`,
-        });
-    }
-    if (!userId) userId = null;
-    const id = comments.length + 1;
-    const comment: IComment = {
-        id,
-        userId,
-        postId,
-        content,
-    };
-    comments.push(comment);
-
-    return res.status(201).json({
-        success: true,
-        message: `comment with id ${comment.id} created`,
-    });
-});
+app.post('/api/v1/comments', commentsControllers.createComment);
 
 // Kommentaari kustutamine
-app.delete('/api/v1/comments/:id', (req: Request, res: Response) => {
-    const id = parseInt(req.params.id);
-    const index = comments.findIndex(element => element.id === id);
-    if (index === -1) {
-        return res.status(404).json({
-            success: false,
-            message: `Comment not found`,
-        });
-    }
-    comments.splice(index, 1);
-    return res.status(200).json({
-        success: true,
-        message: `Comment deleted`,
-    });
-});
+app.delete('/api/v1/comments/:id', commentsControllers.deleteComment);
 
 
 
