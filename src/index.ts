@@ -1,14 +1,4 @@
-import express, { Request, Response } from 'express';
-import { INewUser, IUser, IUserWithoutPassword } from './components/users/interfaces';
-import { IPost, INewPost } from './components/posts/interfaces';
-import { IComment, INewComment } from './components/comments/interfaces';
-import { INewPostStatus, IPostStatus } from './components/postStatuses/interfaces';
-import { ICourse } from './components/courses/interfaces';
-import { ILecturer } from './components/lecturers/interfaces';
-import { IGroup } from './components/groups/interfaces';
-import { ISchoolDay } from './components/schooldays/interfaces';
-import { users, postStatuses, posts, comments, courses, lecturers, groups, schooldays } from './mockData';
-import usersServices from './components/users/services';
+import express, { Request, Response, NextFunction } from 'express';
 import usersControllers from './components/users/controllers';
 import postStatusesControllers from './components/postStatuses/controllers';
 import postsControllers from './components/posts/controllers';
@@ -22,6 +12,44 @@ const app = express();
 const PORT = 3000;
 
 app.use(express.json());
+
+//Middleware - logime, millal, millise endpointi poole pöörduti, millise meetodiga
+const logger = (req: Request, res: Response, next: NextFunction) => {
+    console.log(`${req.method} ${req.url} ${new Date().toISOString()} `);
+    next();
+}
+
+app.use(logger);
+
+//Kasutaja loomise andmete kontrollimiseks middleware
+const checkUserData = (req: Request, res: Response, next: NextFunction) => {
+    console.log("Middleware for user Data check");
+    const { firstName, lastName, email, password } = req.body;
+    if (!firstName || !lastName || !email || !password) {
+        return res.status(400).json({
+            success: false,
+            message: `Some data is missing (firstName, lastName, email, password)`,
+        });
+    };
+    console.log("Andmed olemas! Well done ;) ");
+    next();
+};
+
+//Postituse andmete kontrollimise Middleware test
+const checkPostData = (req: Request, res: Response, next: NextFunction) => {
+    console.log("Middleware for Post Data Check");
+    const { title, content, userId, statusId } = req.body;
+    if (!title || !content || !userId || !statusId) {
+        return res.status(400).json({
+            success: false,
+            message: `Some data is missing (title, content, userId, statusId)`,
+        });
+    };
+    console.log("Andmed olemas, good job!");
+    next();
+};
+
+
 
 // Endpoint API töötamise kontrollimisek
 app.get('/api/v1/health', (req: Request, res: Response) => {
@@ -47,7 +75,7 @@ app.get('/api/v1/users/:id', usersControllers.getUserById);
 app.patch('/api/v1/users/:id', usersControllers.changeUser);
 
 // Kasutaja loomine
-app.post('/api/v1/users', usersControllers.createUser);
+app.post('/api/v1/users', checkUserData, usersControllers.createUser);
 
 // Kasutaja kustutamine
 app.delete('/api/v1/users/:id', usersControllers.deleteUser);
@@ -77,7 +105,7 @@ app.get('/api/v1/posts', postsControllers.getPosts);
 app.get('/api/v1/posts/:id', postsControllers.getPostById);
 
 // Postituse loomine
-app.post('/api/v1/posts', postsControllers.createPost);
+app.post('/api/v1/posts', checkPostData, postsControllers.createPost);
 
 // Postituse muutmine
 app.patch('/api/v1/posts/:id', postsControllers.editPost);
@@ -187,8 +215,6 @@ app.patch('/api/v1/schooldays/:id', schooldaysControllers.editSchoolDay);
 
 //Koolipäeva kustutamine
 app.delete('/api/v1/schooldays/:id', schooldaysControllers.editSchoolDay);
-
-
 
 app.listen(PORT, () => {
     console.log('Server is running');
