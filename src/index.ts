@@ -188,62 +188,6 @@ app.patch('/api/v1/schooldays/:id', schooldaysControllers.editSchoolDay);
 //Koolipäeva kustutamine
 app.delete('/api/v1/schooldays/:id', schooldaysControllers.editSchoolDay);
 
-/*
---------------------------------------------------
-Postitustega seotud funktsioonid
---------------------------------------------------
-*/
-
-const findPostById = (id: number): IPost | undefined => {
-    const post = posts.find(element => {
-        return element.id === id;
-    });
-    return post;
-};
-
-const getPostWithStatusAndUser = (post: IPost) => {
-    const postStatus = getPostStatusById(post.statusId);
-    let user: IUser | undefined = usersServices.findUserById(post.userId);
-    if (!user) user = usersServices.unknownUser();
-    const userWithoutPassword = usersServices.getUserWithoutPassword(user);
-
-    const postWithStatusAndUser = {
-        id: post.id,
-        title: post.title,
-        user: userWithoutPassword,
-        status: postStatus,
-    };
-    return postWithStatusAndUser;
-};
-
-const getPostStatusById = (id: number): IPostStatus | undefined => {
-    let postStatus: IPostStatus | undefined = postStatuses.find(element => element.id === id);
-    if (!postStatus) {
-        postStatus = {
-            id: 0,
-            status: 'Unknown',
-        };
-    };
-    return postStatus;
-}
-/*
---------------------------------------------------
-Kommentaaridega seotud funktsioonid
---------------------------------------------------
-*/
-const getCommentById = (id: number): IComment | undefined => {
-    const comment = comments.find(element => {
-        return element.id === id;
-    });
-    return comment;
-};
-
-const findCommentsByPostId = (id: number): IComment[] => {
-    const postComments = comments.filter(comment => comment.postId === id);
-    return postComments;
-}
-
-
 
 
 app.listen(PORT, () => {
