@@ -5,6 +5,20 @@ TLU HK Programmeerimine II aine raames kirjutatud kood
 Tegemist on repositooriumiga, mis sisaldab Tallinna Ülikooli Haapsalu kolledži Rakendusinformaatika õppekava valikaine [Programmeerimine II](https://ois2.tlu.ee/tluois/aine/HKI5003.HK) raames kirjutatud koodi.
 
 ## Loengud
+### Testimine
+- Automaattestmine
+
+### Neljas loeng
+- Andmebaasi ühendus
+
+### Kolmas loeng
+- Turvalisus
+  - Paroolid (hash)
+    	- Salt
+      - Salt-rounds
+- JSON web token
+
+
 ### Teine loeng
 -Struktueerimine 
   - Kontrollerid
@@ -80,7 +94,7 @@ Siia tekib jooksvalt esialgu lihtsalt API enpointide nimekiri koos nõutud param
 
 ### Postituste staatustega seotud endpoindid
 - - Kõikide postituste staatuste pärimise endpoint (GET)
-- - /api/v1/posts/statuses
+- - '/api/v1/posts/statuses'
 
 - - Postituse staatus pärimine staatuse id alusel (GET)
 - - '/api/v1/posts/statuses/:id'
@@ -90,86 +104,85 @@ Siia tekib jooksvalt esialgu lihtsalt API enpointide nimekiri koos nõutud param
 - - '/api/v1/posts'
 
 - - Postituse pärimine id alusel (GET)
-- - app.get('/api/v1/posts/:id', postsControllers.getPostById);
+- - '/api/v1/posts/:id'
 
 - - Postituse loomine (GET)
-- - app.post('/api/v1/posts', checkPostData, postsControllers.createPost);
+- - '/api/v1/posts'
 
 - - Postituse muutmine (PATCH)
-- - app.patch('/api/v1/posts/:id', postsControllers.editPost);
+- - '/api/v1/posts/:id
 
 - - Postituse kustutamine (DELETE)
-- - app.delete('/api/v1/posts/:id', postsControllers.deletePost);
+- - '/api/v1/posts/:id
 
 ### Kommentaaridega seotud endpoindid
-- -  Kõikide kommentaaride pärimise endpoint (GET)
-- - app.get('/api/v1/comments', commentsControllers.getComments);
+- - Kõikide kommentaaride pärimise endpoint (GET)
+- - '/api/v1/comments'
 
 - - Kommentaari pärimine id alusel (GET)
-- - app.get('/api/v1/comments/:id', commentsControllers.getCommentById);
+- - '/api/v1/comments/:id'
 
 - - Postitusega seotud kommentaaride pärimise endpoint (GET)
-- - app.get('/api/v1/posts/:id/comments', postsControllers.getPostComment);
+- - '/api/v1/posts/:id/comments'
 
 - - Kommentaari loomine (POST)
-- - app.post('/api/v1/comments', commentsControllers.createComment);
+- - '/api/v1/comments'
 
 - - Kommentaari kustutamine (DELETE)
-- - app.delete('/api/v1/comments/:id', commentsControllers.deleteComment);
+- - '/api/v1/comments/:id'
 
 
 
 ### Õppeainetega seotud endpointid
 - - õppeainete pärimise endpoint (GET) 
-- - app.get('/api/v1/courses', coursesControllers.getCourses);
+- - '/api/v1/courses'
 
 - - Õppeaine loomine (POST)
-- - app.post('/api/v1/courses', coursesControllers.createCourse);
+- - '/api/v1/courses'
 
 - - Õppeaine muutmine (PATCH)
-- - app.patch('/api/v1/courses/:id', coursesControllers.editCourse);
+- - '/api/v1/courses/:id'
 
 - - Õppeaine kustutamine (DELETE)
-- - app.delete('/api/v1/courses/:id', coursesControllers.deleteCourse);
+- - '/api/v1/courses/:id'
 
 ### Õppejõuga seotud endpointid
 - - Õppejõud pärimise endpoint (GET)
-- - app.get('/api/v1/lecturers', lecturersControllers.getLecturer);
+- - '/api/v1/lecturers'
 
 - - Õppejõu loomine (POST)
-- - app.post('/api/v1/lecturers', lecturersControllers.addLecturer);
+- - '/api/v1/lecturers'
 
 - - Õppejõu muutmine (PATCH)
-- - app.patch('/api/v1/lecturers/:id', lecturersControllers.editLecturer);
+- - '/api/v1/lecturers/:id'
 
 - - Õppejõu kustutamine (DELETE)
-- - app.delete('/api/v1/lecturers/:id', lecturersControllers.deleteLecturer);
+- - '/api/v1/lecturers/:id'
 
 ### Gruppidega seotud endpointid - 
 - - Kursusegrupid (GET)
-- - app.get('/api/v1/groups', groupsControllers.getGroups);
+- - '/api/v1/groups'
 
 - - Kursusegrupi lisamine (POST)
-- - app.post('/api/v1/groups/', groupsControllers.addGroup);
+- - '/api/v1/groups/'
 
 - - Kursusegrupi muutmine (PATCH)
-- - app.patch('/api/v1/groups/:id', groupsControllers.editGroup);
+- - '/api/v1/groups/:id'
 
 
 - - Kursusegrupi kustutamine (DELETE)
-- - app.delete('/api/v1/groups/:id', groupsControllers.deleteGroup);
+- - '/api/v1/groups/:id'
 
 ### Koolipäevadega seotud endpointid - 
 - - Koolipäevad (GET)
-- - app.get('/api/v1/schooldays', schooldaysControllers.getSchoolDays);
+- - '/api/v1/schooldays'
 
 - - Koolipäeva lisamine (POST)
-- - app.post('/api/v1/schooldays/', schooldaysControllers.addSchoolDay);
+- - '/api/v1/schooldays/'
 
 
 - - Koolipäeva muutmine (PATCH)
-- - app.patch('/api/v1/schooldays/:id', schooldaysControllers.editSchoolDay);
-
+- - '/api/v1/schooldays/:id'
 
 - - Koolipäeva kustutamine (DELETE)
-- - app.delete('/api/v1/schooldays/:id', schooldaysControllers.editSchoolDay);
+- - '/api/v1/schooldays/:id'

@@ -14,6 +14,7 @@ const users: IUser[] = [
         lastName: 'Loopman',
         email: 'kloopman@tlu.ee',
         password: 'kerli',
+        role: 'Admin',
     },
     {
         id: 2,
@@ -21,6 +22,7 @@ const users: IUser[] = [
         lastName: 'Maasikas',
         email: 'maali@maasikas.ee',
         password: 'maasikas',
+        role: 'User',
     },
 ];
 

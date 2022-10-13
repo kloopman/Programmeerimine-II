@@ -58,15 +58,16 @@ const usersControllers = {
             message: `User updated`,
         });
     },
-    createUser: (req: Request, res: Response) => {
+    createUser: async (req: Request, res: Response) => {
         const { firstName, lastName, email, password } = req.body;
         const newUser: INewUser = {
             firstName,
             lastName,
             email,
-            password
+            password,
+            role: 'User',
         };
-        const id = usersServices.createUser(newUser);
+        const id = await usersServices.createUser(newUser);
 
         return res.status(201).json({
             success: true,
